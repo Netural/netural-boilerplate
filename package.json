@@ -2,7 +2,7 @@
   "name": "netural-boilerplate",
   "description": "netural-boilerplate",
   "private": true,
-  "version": "1.2.0",
+  "version": "1.3.0",
   "author": "Dominik Angerer, Alexander Feiglstorfer, Klaus Fischer <klaus.fischer@netural.com>",
   "devDependencies": {
     "babel-preset-es2015": "^6.22.0",
