@@ -1,0 +1,3 @@
+{% for key, blok in blok.body %}
+    {% include 'components/' ~ blok.component ~ '.twig' with { blok: blok } %}
+{% endfor %}
