@@ -37,8 +37,8 @@ composer update
 In the `webapp/config.php` all you need to change is the `STORYBLOK_CONFIGURATION` - by adding your space information. [What is a Space?](https://www.storyblok.com/docs/terminology/space):
 
 ```PHP
-$app['config.home']             = 'home'; //change this to your home story slug
-$app['storyblok.privateToken']  = 'Iw3XKcJb6MwkdZEwoQ9BCQtt'; // change this to your private key.
+$app['config.homeSlug']             = 'home'; //change this to your home story slug
+$app['storyblok.previewToken']  = 'Iw3XKcJb6MwkdZEwoQ9BCQtt'; // change this to your private key.
 ```
 
 ## Folder structure
@@ -54,7 +54,7 @@ $app['storyblok.privateToken']  = 'Iw3XKcJb6MwkdZEwoQ9BCQtt'; // change this to 
 - `/public/`
   Once you run `gulp` the `app` source files will be prepared and copied to the `/public/` folder for delivery.
 - `/cache/`
-  Our [client library](https://github.com/storyblok/php-client) directly adds a file cache (you can change this setting as well) for every storyblok request you do - this folder is the place where we save the cached results. 
+  Our [client library](https://github.com/storyblok/php-client) directly adds a file cache (you can change this setting as well) for every storyblok request you do - this folder is the place where we save the cached results.
 
 
 ## You want to know more about storyblok?
@@ -89,7 +89,7 @@ sudo mv composer.phar /usr/local/bin/composer
 
 ## How can I add critical CSS for above the fold ?
 - `app/styles/inline.scss` will be inlined on top of each page
-- If you optimize for critical CSS, **move** styles from `main.scss` to `inline.scss` 
+- If you optimize for critical CSS, **move** styles from `main.scss` to `inline.scss`
 
 ## How can I add font precaching with service workers?
 - Please check out other projects, because techniques change all the time
@@ -149,5 +149,12 @@ $.ajax({
 ```
 
 - If the captcha is valid, you can implement the main form request in `webapp/src/App/Controllers/GoogleCaptcha.php`.
+
+## How can I enable the maintenance page?
+- Go to the `app` folder
+- Rename `index.php` to `index-original.php`
+- Rename `index-maintenance.php` to `index.php`
+
+Gulp copies the `index.php` file from the `app` folder to the `public` folder. The maintenance page is a standalone page, it won't load any dependencies. In case you like to embed images on the maintenance page, you can add them to the `app/images` folder and the gulp task will copy them to the `public/images` folder.
 
 > [Netural](https://www.netural.com/) & [Storyblok](https://www.storyblok.com/)

@@ -1,0 +1,12 @@
+{
+    "extends": "stylelint-config-sass-guidelines",
+    "rules": {
+      "function-comma-space-after": "always",
+      "indentation": 4,
+      "max-empty-lines": 3,
+      "max-nesting-depth": 2,
+      "selector-pseudo-element-colon-notation": "single",
+      "selector-class-pattern": "^(?:(?:o|c|u|t|s|is|has|_|js|qa)-)?[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*(?:__[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*)?(?:--[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*)?(?:\\[.+\\])?$",
+      "shorthand-property-no-redundant-values": null
+    }
+  }
