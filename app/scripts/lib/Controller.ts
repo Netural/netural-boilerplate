@@ -70,7 +70,7 @@ export class Controller {
     }
 
 
-	/**
+    /**
      * Creates an instance of a Controller.
      *
      * @param {Element} root The element where the controller has been applied
@@ -232,7 +232,7 @@ export class Controller {
      * every element.
      *
      * @static
-	 * @param {string} selector Dom selector
+     * @param {string} selector Dom selector
      * @param {Element} [root=document.body] Starting element for parsing
      */
     static parse(selector: string, root: Element = document.body): void {

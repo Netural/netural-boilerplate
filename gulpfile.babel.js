@@ -35,6 +35,8 @@ const postcssPlugins = [
     cssnano()
 ];
 
+const isProduction = process.env.NODE_ENV === 'production' ? true : false;
+
 gulp.task('clean', function () {
     del.sync(['public']);
 });
