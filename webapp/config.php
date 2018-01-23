@@ -17,9 +17,6 @@ $app['config.host.live']        = ''; // www.website.com
 
 $app['config.fontCacheName']           = 'netural-fontcache'; // used for localstorage lowercase (e.g. my-customer-fontcache)
 
-// META
-$app['config.meta.brandName']               = ''; // For the meta title
-
 // RECAPTCHA
 $app['recaptcha.url']            = 'https://www.google.com/recaptcha/api/siteverify';
 $app['config.recaptcha.slugs']              = array(); // Slugs of pages where the recaptcha should be embedded
