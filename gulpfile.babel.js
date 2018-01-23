@@ -27,6 +27,7 @@ import webpackStream from 'webpack-stream';
 
 import webpackConfig from './webpack.config.js';
 import packageJSON from './package.json';
+import externals from './externals.js';
 
 const reload = browserSync.reload;
 const postcssPlugins = [
@@ -77,6 +78,12 @@ gulp.task('scripts', function () {
         .pipe(browserSync.stream());
 });
 
+gulp.task('scripts:vendor', function () {
+    return gulp.src(externals)
+        .pipe(concat('vendor.js'))
+        .pipe(gulp.dest('public/scripts'));
+});
+
 gulp.task('styles', function () {
     return gulp.src(['app/styles/**/*.{sass,scss}', '!app/styles/fonts.scss'])
         .pipe(plumber({errorHandler: notify.onError("SCSS Error: <%= error.message %>")}))
@@ -122,7 +129,7 @@ gulp.task('php', function () {
     });
 });
 
-gulp.task('default', ['clean', 'version', 'styles', 'scripts', 'fonts', 'images', 'content', 'php'], function () {
+gulp.task('default', ['clean', 'version', 'styles', 'scripts', 'scripts:vendor', 'fonts', 'images', 'content', 'php'], function () {
     browserSync({
         port: 4200,
         proxy: {
@@ -145,7 +152,7 @@ gulp.task('default', ['clean', 'version', 'styles', 'scripts', 'fonts', 'images'
     gulp.watch('app/scripts/**/*', ['scripts']);
 });
 
-gulp.task('build', ['clean', 'version', 'styles', 'scripts', 'fonts', 'images', 'content']);
+gulp.task('build', ['clean', 'version', 'styles', 'scripts', 'scripts:vendor', 'fonts', 'images', 'content']);
 
 function string_src(filename, string) {
     var src = require('stream').Readable({ objectMode: true });

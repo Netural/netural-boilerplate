@@ -36,6 +36,10 @@
 
     {% include 'components/' ~ story.content.component ~ '.twig' with { blok: story.content } %}
 
+    {# vendor.js for external scripts (defined in externals.js) #}
+    <script type="text/javascript" src="{{ asset('scripts/vendor.js') | version }}"></script>
+
+
     <script type="text/javascript" src="{{ asset('scripts/main.js') | version }}"></script>
 
     {% if app.request.get('_storyblok') %}
@@ -73,7 +77,7 @@
         try {
           if(ls.getItem(fontcachename) === null) {
             var h = new x();
-            h.open('GET', '{{ asset('styles/fonts.css') }}' );
+            h.open("GET", "{{ asset('styles/fonts.css') }}" );
             h.send();
             h.onload = function() {addStyles(this.responseText);
             ls.setItem(fontcachename, fontversion+'####'+this.responseText);
