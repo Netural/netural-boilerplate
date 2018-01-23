@@ -2,7 +2,7 @@
   "name": "netural-boilerplate",
   "description": "netural-boilerplate",
   "private": true,
-  "version": "1.4.0",
+  "version": "1.4.2",
   "author": "Dominik Angerer, Alexander Feiglstorfer, Klaus Fischer <klaus.fischer@netural.com>, Michael Ester <michael.ester@netural.com>",
   "scripts": {
     "lint": "stylelint 'app/styles/**/*.scss' && tslint -p tsconfig.json 'app/scripts/**/*.ts'",
