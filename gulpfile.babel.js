@@ -9,6 +9,7 @@ import File from 'vinyl';
 import fs from 'fs';
 import globbing from 'gulp-css-globbing';
 import gulp from 'gulp';
+import gulpif from 'gulp-if';
 import gitrev from 'git-rev';
 import imagemin from 'gulp-imagemin';
 import notify from 'gulp-notify';
@@ -72,7 +73,7 @@ gulp.task('fonts', function () {
 
 gulp.task('scripts', function () {
     return gulp.src('app/scripts/main.ts')
-        .pipe(plumber({errorHandler: notify.onError("JS Error: <%= error.message %>")}))
+    .pipe(gulpif(!isProduction, plumber({errorHandler: notify.onError("JS: <%= error.message %>")})))
         .pipe(webpackStream(webpackConfig, webpack))
         .pipe(gulp.dest('public/scripts'))
         .pipe(browserSync.stream());
