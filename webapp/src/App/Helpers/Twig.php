@@ -13,6 +13,35 @@ class Twig implements ServiceProviderInterface
 {
     public function register(Application $app)
     {
+        function getUrl($app, $link) {
+            if(!isset($app['storyblok.links'])) {
+                $app['storyblok.links'] = $app['storyblok']->getLinks()->getBody()['links'];
+            }
+            if(isset($link['id']) && isset($app['storyblok.links'][$link['id']])) {
+                $url_slug = $app['storyblok.links'][$link['id']]['slug'];
+
+                if ($url_slug === $app['config.homeSlug']) {
+                    return '/';
+                }
+
+                return '/'. $url_slug;
+            } else {
+                return $link['url'];
+            }
+        }
+
+        function addToUrl($url, $key, $value = null) {
+            $query = parse_url($url, PHP_URL_QUERY);
+            if ($query) {
+                parse_str($query, $queryParams);
+                $queryParams[$key] = $value;
+                $url = str_replace("?$query", '?' . http_build_query($queryParams), $url);
+            } else {
+                $url .= '?' . urlencode($key) . '=' . urlencode($value);
+            }
+            return $url;
+        }
+
         /*
         * Allows to use Markdown in your templates
         *
@@ -43,14 +72,20 @@ class Twig implements ServiceProviderInterface
         * Usage: `{{ $my_url_object | url }}`
         */
         $app['twig']->addFilter(new \Twig_SimpleFilter('url', function ($link) use ($app) {
-             if(!isset($app['storyblok.links'])) {
-                $app['storyblok.links'] = $app['storyblok']->getLinks()->getBody()['links'];
-             }
-             if(isset($link['id']) && isset($app['storyblok.links'][$link['id']])) {
-                 return '/'. $app['storyblok.links'][$link['id']]['slug'];
-             } else {
-                 return $link['url'];
-             }
+            return getUrl($app, $link);
+        }));
+
+        /*
+        * Checks if a url with the storyblok-fieldtype 'link' is set
+        *
+        * Usage: `{% if isUrl(globalcontent.someLink) %}`
+        */
+        $app['twig']->addFunction(new \Twig_SimpleFunction('isUrl', function ($link) use ($app) {
+            if ((isset($link['id']) && $link['id'] != '') || (isset($link['url']) && $link['url'] != '')) {
+                return true;
+            }
+
+            return false;
         }));
 
         /*
@@ -65,24 +100,17 @@ class Twig implements ServiceProviderInterface
         }));
 
         /**
-         * get labels from storyblok
-         * make sure you have a Datasource de_labels
+         * Returns true or false if the current url is the active navigation item
          */
-        $app['twig']->addFunction(new \Twig_SimpleFunction('label', function ($key) use ($app) {
-            try {
-                if(!isset($app['labels'])) {
-                    $app['labels'] = $app['storyblok']->getDatasourceEntries($app['config.locale'] . '_labels', array('per_page' => 1000))->getAsNameValueArray();
-                }
-                if(!isset($app['labels'])) {
-                    return ucfirst($key);
-                }
-                if(!isset($app['labels'][$key])) {
-                    return ucfirst($key);
-                }
-            } catch (\Exception $e) {
-                throw new \Exception($e);
+        $app['twig']->addFunction(new \Twig_SimpleFunction('isActiveNavigationItem', function ($navigationitem) use ($app) {
+            $link_url = getUrl($app, $navigationitem);
+            $request_url = $_SERVER['REQUEST_URI'];
+
+            if (strlen($request_url) > 1 && substr($request_url, -1) === '/') {
+                $request_url = substr($request_url, 0, -1);
             }
-            return $app['labels'][$key];
+
+            return $link_url === $request_url;
         }));
 
         /*
@@ -119,7 +147,7 @@ class Twig implements ServiceProviderInterface
             try {
                 return $app['storyblok']->getDatasourceEntries($slug)->getAsNameValueArray();
             } catch (\Exception $e) {
-                throw new Exception($e);
+                throw new \Exception($e);
             }
             return null;
         }));
@@ -148,7 +176,7 @@ class Twig implements ServiceProviderInterface
 
                 return $data['stories'];
             } catch (\Exception $e) {
-                throw new Exception($e);
+                throw new \Exception($e);
             }
             return null;
         }));
@@ -177,7 +205,23 @@ class Twig implements ServiceProviderInterface
 
                 return $data['story'];
             } catch (\Exception $e) {
-                throw new Exception($e);
+                throw new \Exception($e);
+            }
+            return null;
+        }));
+
+        /**
+         * fetches the global story
+         */
+        $app['twig']->addFunction(new \Twig_SimpleFunction('getGlobalStory', function () use ($app) {
+            try {
+                $app['storyblok']->getStoryBySlug('global');
+
+                $data = $app['storyblok']->getBody();
+
+                return $data['story'];
+            } catch (\Exception $e) {
+                return '';
             }
             return null;
         }));
@@ -194,6 +238,88 @@ class Twig implements ServiceProviderInterface
         }));
 
         /**
+         * Returns true if you are in test environment
+         *
+         * Usage: `{% if isTest() %} ... {% endif %}`
+         *
+         * @return boolean true if you are in test environment
+         */
+        $app['twig']->addFunction(new \Twig_SimpleFunction('isTest', function () use ($app) {
+            return TEST;
+        }));
+
+        /**
+         * Returns true if you are in live environment
+         *
+         * Usage: `{% if isLive() %} ... {% endif %}`
+         *
+         * @return boolean true if you are in live environment
+         */
+        $app['twig']->addFunction(new \Twig_SimpleFunction('isLive', function () use ($app) {
+            return LIVE;
+        }));
+
+        /*
+        * Usage: `{{ getPageTitle(story) }}`
+        */
+        $app['twig']->addFunction(new \Twig_SimpleFunction('getPageTitle', function ($story) use ($app) {
+            $title = $story['name'];
+
+            if (isset($story['content']['meta_title'])) {
+                $title = $story['content']['meta_title'];
+            }
+
+            return $title;
+        }));
+
+        /**
+         * Returns the canonical of the current page
+         *
+         * Usage: `{{ getCanonical() }}`
+         */
+        $app['twig']->addFunction(new \Twig_SimpleFunction('getCanonical', function () use ($app) {
+            $request_url_elements = explode('?', $_SERVER['REQUEST_URI']);
+            $canonical = 'https://' . $app['config.host.live'] . $request_url_elements[0];
+            return $canonical;
+        }));
+
+        /**
+         * Returns the localstorage key for accessing the saved font
+         *
+         * Usage: `{{ getFontCacheKey() }}`
+         */
+        $app['twig']->addFunction(new \Twig_SimpleFunction('getFontCacheKey', function () use ($app) {
+            return $app['config.fontCacheName'];
+        }));
+
+        /**
+         * Usage: `{{ embedRecaptcha(story.full_slug) }}`
+         */
+        $app['twig']->addFunction(new \Twig_SimpleFunction('embedRecaptcha', function ($full_slug) use ($app) {
+            return in_array($full_slug, $app['config.recaptcha.slugs']);
+        }));
+
+        /*
+        * Image helper
+        *
+        * Usage: `{{ image(imagepath, width) }}`
+        */
+        $app['twig']->addFunction(new \Twig_SimpleFunction('image', function ($image, $width) use ($app) {
+            $imageService = '//img2.storyblok.com';
+            $path = str_replace('//a.storyblok.com', '', $image);
+
+            $output = $imageService;
+
+            if ($width != '') {
+                $output .= '/' . $width . 'x0';
+            }
+
+            $output .= $path;
+
+            return $output;
+        }));
+
+        /**
          * Get the contents of a file
          *
          * @param $path path of the file relative to the `public` directory with leading slash (e.g. /styles/inline.css)
@@ -202,18 +328,6 @@ class Twig implements ServiceProviderInterface
         $app['twig']->addFunction(new \Twig_SimpleFunction('include_file', function ($path) use ($app) {
             return @file_get_contents(PUBLIC_DIR . $path);
         }));
-
-        function addToUrl($url, $key, $value = null) {
-            $query = parse_url($url, PHP_URL_QUERY);
-            if ($query) {
-                parse_str($query, $queryParams);
-                $queryParams[$key] = $value;
-                $url = str_replace("?$query", '?' . http_build_query($queryParams), $url);
-            } else {
-                $url .= '?' . urlencode($key) . '=' . urlencode($value);
-            }
-            return $url;
-        }
     }
 
     public function boot(Application $app)
