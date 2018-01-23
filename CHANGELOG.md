@@ -1,3 +1,7 @@
+# 1.4.2
+
+- Updated: `silex/silex` and `twig/twig`
+
 # 1.4.1
 
 - Removed: trailing brandname in `<title>`
