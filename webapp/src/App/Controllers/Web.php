@@ -12,13 +12,13 @@ class Web implements ControllerProviderInterface {
     public function connect(Application $app) {
         $controllers = $app['controllers_factory'];
 
-        $controllers->get('/', function (Request $request, $slug) use ($app) {
+        $controllers->get('{slug}', function (Request $request, $slug) use ($app) {
             $data = [];
 
             try {
                 // if home should be available on / it shouldn't be on /{{home_slug}}
                 // except we are in storyblok or the redirect parameter is present.
-                if ( !$app['config.redirect_home'] && $app['config.home'] == $slug && !$request->query->get('redirect') && !$request->query->get('_storyblok') ) {
+                if ( !$app['config.redirectHome'] && $app['config.homeSlug'] == $slug && !$request->query->get('redirect') && !$request->query->get('_storyblok') ) {
                     $app->abort(404, "Story $slug does not exist.");
                 }
 

@@ -1,19 +1,20 @@
+
 // UTIL
 @import 'util/variables';
 @import 'util/mixins';
 @import 'util/util';
 
 // NODE MODULES
-@import 'node_modules/uikit/dist/scss/uikit-mixins';
-@import 'node_modules/uikit/dist/scss/uikit-variables';
-@import 'node_modules/uikit/dist/scss/core/utility';
-@import 'node_modules/uikit/dist/scss/core/base';
-@import 'node_modules/uikit/dist/scss/core/grid';
-
+// Disabling just for the main file, because gulp-sass-glob will resolve with leading underscores ("_base.scss", ..) which annoys the stylelint
 /* stylelint-disable */
+@import 'uikit';
+
 // BASE
 @import 'base/**/*';
 
 // COMPONENTS
 @import 'components/**/*';
 /* stylelint-enable */
+
+@import 'print';
+

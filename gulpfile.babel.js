@@ -7,8 +7,8 @@ import cssnano from 'cssnano';
 import del from 'del';
 import File from 'vinyl';
 import fs from 'fs';
-import globbing from 'gulp-css-globbing';
 import gulp from 'gulp';
+import gulpif from 'gulp-if';
 import gitrev from 'git-rev';
 import imagemin from 'gulp-imagemin';
 import notify from 'gulp-notify';
@@ -25,9 +25,9 @@ import size from 'gulp-size';
 import webpack from 'webpack';
 import webpackStream from 'webpack-stream';
 
-import externals from './externals.js';
 import webpackConfig from './webpack.config.js';
 import packageJSON from './package.json';
+import externals from './externals.js';
 
 const reload = browserSync.reload;
 const postcssPlugins = [
@@ -35,18 +35,20 @@ const postcssPlugins = [
     cssnano()
 ];
 
+const isProduction = process.env.NODE_ENV === 'production' ? true : false;
+
 gulp.task('clean', function () {
     del.sync(['public']);
 });
 
 gulp.task('version', function () {
-    return gitrev.long(function (str) {
+    return gitrev.short(function (str) {
             return string_src('version.cache', str).pipe(gulp.dest('public'))
         });
 });
 
 gulp.task('content', function () {
-    return gulp.src(['app/**/*.{xml,json,yml,php}', '!app/index-original.php', '!app/index-maintenance.php'])
+    return gulp.src(['app/**/*.{xml,json,yml,php}'])
         .pipe(gulp.dest('public'))
         .pipe(size({
             title: "content"
@@ -70,7 +72,7 @@ gulp.task('fonts', function () {
 
 gulp.task('scripts', function () {
     return gulp.src('app/scripts/main.ts')
-        .pipe(plumber({errorHandler: notify.onError("JS Error: <%= error.message %>")}))
+    .pipe(gulpif(!isProduction, plumber({errorHandler: notify.onError("JS: <%= error.message %>")})))
         .pipe(webpackStream(webpackConfig, webpack))
         .pipe(gulp.dest('public/scripts'))
         .pipe(browserSync.stream());
@@ -93,11 +95,12 @@ gulp.task('styles', function () {
         }))
         .on('error', error => console.error(error.message))
         .pipe(sourcemaps.init())
+        .pipe(gulpif(!isProduction, sourcemaps.init()))
         .pipe(sass({
             outputStyle: 'expanded'
         }))
         .pipe(postCSS(postcssPlugins))
-        .pipe(sourcemaps.write('.'))
+        .pipe(gulpif(!isProduction, sourcemaps.write('.')))
         .pipe(gulp.dest('public/styles'))
         .pipe(browserSync.stream())
         .pipe(size({
