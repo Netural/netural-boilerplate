@@ -25,7 +25,6 @@ import size from 'gulp-size';
 import webpack from 'webpack';
 import webpackStream from 'webpack-stream';
 
-import externals from './externals.js';
 import webpackConfig from './webpack.config.js';
 import packageJSON from './package.json';
 
@@ -42,13 +41,13 @@ gulp.task('clean', function () {
 });
 
 gulp.task('version', function () {
-    return gitrev.long(function (str) {
+    return gitrev.short(function (str) {
             return string_src('version.cache', str).pipe(gulp.dest('public'))
         });
 });
 
 gulp.task('content', function () {
-    return gulp.src(['app/**/*.{xml,json,yml,php}', '!app/index-original.php', '!app/index-maintenance.php'])
+    return gulp.src(['app/**/*.{xml,json,yml,php}'])
         .pipe(gulp.dest('public'))
         .pipe(size({
             title: "content"
@@ -76,12 +75,6 @@ gulp.task('scripts', function () {
         .pipe(webpackStream(webpackConfig, webpack))
         .pipe(gulp.dest('public/scripts'))
         .pipe(browserSync.stream());
-});
-
-gulp.task('scripts:vendor', function () {
-    return gulp.src(externals)
-        .pipe(concat('vendor.js'))
-        .pipe(gulp.dest('public/scripts'));
 });
 
 gulp.task('styles', function () {
@@ -129,7 +122,7 @@ gulp.task('php', function () {
     });
 });
 
-gulp.task('default', ['clean', 'version', 'styles', 'scripts', 'scripts:vendor', 'fonts', 'images', 'content', 'php'], function () {
+gulp.task('default', ['clean', 'version', 'styles', 'scripts', 'fonts', 'images', 'content', 'php'], function () {
     browserSync({
         port: 4200,
         proxy: {
@@ -152,7 +145,7 @@ gulp.task('default', ['clean', 'version', 'styles', 'scripts', 'scripts:vendor',
     gulp.watch('app/scripts/**/*', ['scripts']);
 });
 
-gulp.task('build', ['clean', 'version', 'styles', 'scripts', 'scripts:vendor', 'fonts', 'images', 'content']);
+gulp.task('build', ['clean', 'version', 'styles', 'scripts', 'fonts', 'images', 'content']);
 
 function string_src(filename, string) {
     var src = require('stream').Readable({ objectMode: true });
