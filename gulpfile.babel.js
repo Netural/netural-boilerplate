@@ -7,7 +7,6 @@ import cssnano from 'cssnano';
 import del from 'del';
 import File from 'vinyl';
 import fs from 'fs';
-import globbing from 'gulp-css-globbing';
 import gulp from 'gulp';
 import gulpif from 'gulp-if';
 import gitrev from 'git-rev';
@@ -96,11 +95,12 @@ gulp.task('styles', function () {
         }))
         .on('error', error => console.error(error.message))
         .pipe(sourcemaps.init())
+        .pipe(gulpif(!isProduction, sourcemaps.init()))
         .pipe(sass({
             outputStyle: 'expanded'
         }))
         .pipe(postCSS(postcssPlugins))
-        .pipe(sourcemaps.write('.'))
+        .pipe(gulpif(!isProduction, sourcemaps.write('.')))
         .pipe(gulp.dest('public/styles'))
         .pipe(browserSync.stream())
         .pipe(size({
